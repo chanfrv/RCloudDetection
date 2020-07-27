@@ -11,6 +11,22 @@ type Vector5 = (u8, u8, u8, u8, u8);
 /// Iteration counter lmit for the kemean algorithm.
 const ITERATION_LIMIT: u32      = 30;
 
+/// Colormap
+const COLORMAP_SIZE: usize      = 10;
+const COLORMAP: [[u8; 3]; COLORMAP_SIZE] =
+[
+    [0,   0,   255],
+    [0,   127, 255],
+    [0,   255, 255],
+    [0,   255, 127],
+    [0,   255,   0],
+    [127, 255,   0],
+    [255, 255,   0],
+    [255, 127,   0],
+    [255,   0,   0],
+    [127,   0,  55]
+];
+
 /// Kmeans structure.
 pub struct Kmeans
 {
@@ -182,7 +198,10 @@ fn set_closest_class(classes: &Classes, img_in: &RgbImage, img_out: &mut RgbImag
         }
     }
 
-    img_out.put_pixel(x, y, image::Rgb([classes[base_index]; 3]));
+    //img_out.put_pixel(x, y, image::Rgb([classes[base_index]; 3]));
+
+    let colormap_index: usize = base_index * COLORMAP_SIZE / CLASS_NUM;
+    img_out.put_pixel(x, y, image::Rgb(COLORMAP[colormap_index]));
 }
 
 /// Recreates the histogram on the output image and computes the ratio clouds/total.
