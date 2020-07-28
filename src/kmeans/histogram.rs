@@ -1,5 +1,5 @@
 use image::{Rgb, RgbImage};
-use std::ops::{Index, IndexMut};
+use std::ops::{Index, IndexMut, Range, RangeFrom, RangeTo};
 
 /// Histogram structure.
 pub struct Histogram
@@ -10,7 +10,7 @@ pub struct Histogram
 impl Histogram
 {
     /// Initialize an histogram and fills it with the input image pixels.
-    pub fn init(img: &RgbImage) -> Histogram
+    pub fn new(img: &RgbImage) -> Histogram
     {
         let mut histo = Histogram{array: [0; 256]};
 
@@ -37,6 +37,33 @@ impl Index<usize> for Histogram
     }
 }
 
+impl Index<Range<usize>> for Histogram
+{
+    type Output = [u32];
+    fn index(&self, index: Range<usize>) -> &Self::Output
+    {
+        &self.array[index]
+    }
+}
+
+impl Index<RangeFrom<usize>> for Histogram
+{
+    type Output = [u32];
+    fn index(&self, index: RangeFrom<usize>) -> &Self::Output
+    {
+        &self.array[index]
+    }
+}
+
+impl Index<RangeTo<usize>> for Histogram
+{
+    type Output = [u32];
+    fn index(&self, index: RangeTo<usize>) -> &Self::Output
+    {
+        &self.array[index]
+    }
+}
+
 /// Mutable array operator `[]`.
 impl IndexMut<usize> for Histogram
 {
@@ -49,7 +76,5 @@ impl IndexMut<usize> for Histogram
 /// Returns the mean of a pixel `(r + g + b) / 3`.
 pub fn get_pix_mean(pixel: &Rgb<u8>) -> u8
 {
-    let mut sum: u32 = 0;
-    for i in 0..3 { sum += pixel[i] as u32;}
-    return (sum / 3) as u8;
+    (pixel.0.iter().map(|&x| x as u32).sum::<u32>() / 3) as u8
 }

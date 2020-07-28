@@ -1,7 +1,7 @@
 use std::ops::{Index, IndexMut};
 
 /// Class amount.
-pub const CLASS_NUM      : usize    = 4;
+pub const CLASS_NUM      : usize    = 6;
 /// Class base value.
 pub const CLASS_BASE     : u8       = (255 / CLASS_NUM) as u8;
 /// Maximum difference between 2 classes to consider them similar (see [`is_stable`]).
@@ -16,7 +16,7 @@ pub struct Classes
 impl Classes
 {
     /// Initialize the class array with equidistant classes.
-    pub fn init() -> Classes
+    pub fn new() -> Classes
     {
         let mut class = Classes{ array: [0; CLASS_NUM] };
         for i in 0..CLASS_NUM
@@ -33,6 +33,20 @@ impl Classes
         {
             array: self.array.clone()
         }
+    }
+
+    /// Returns true if the classes are close enough.
+    pub fn is_stable(&self, rhs: &Classes) -> bool
+    {
+        for index in 0..CLASS_NUM
+        {
+            let diff = i32::abs(self[index] as i32 - rhs[index] as i32);
+            if diff as usize >= CLASS_THRESHOLD
+            {
+                return false;
+            }
+        }
+        return true;
     }
 }
 

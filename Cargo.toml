@@ -9,12 +9,3 @@ edition = "2018"
 [dependencies]
 image = ""
 show-image = ""
-
-[[bin]]
-name = "nuage_detection"
-path = "src/main.rs"
-
-[[bin]]
-name = "nuage_detection_gui"
-path = "src/main_gui.rs"
-default-run = true
