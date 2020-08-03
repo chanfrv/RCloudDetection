@@ -1,10 +1,8 @@
+use super::histogram::*;
+use super::classes::*;
 use image::{Rgb, RgbImage};
 
-mod classes;
-mod histogram;
-use classes::*;
-use histogram::*;
-
+#[allow(dead_code)]
 pub enum KmeansColor {
     Grayscale,
     Rgb,
@@ -30,7 +28,7 @@ const COLORMAP: [[u8; 3]; COLORMAP_SIZE] = [
     [255, 0, 0],
     [127, 0, 55],
 ];
-const COLORMAP_CLOUD_THRESHOLD: usize = 2;
+const COLORMAP_CLOUD_THRESHOLD: usize = 1;
 
 /// Kmeans structure.
 pub struct Kmeans {
@@ -50,9 +48,9 @@ impl Kmeans {
     /// Creates the output image by applying a modified k-means algorithm to the input image.
     pub fn compute_image(&mut self, img_in: &RgbImage, img_out: &mut RgbImage) -> u32 {
         // init the histogram
-        let histo = histogram::Histogram::new(&img_in);
+        let histo = Histogram::new(&img_in);
         // init the classes
-        let mut classes = classes::Classes::new();
+        let mut classes = Classes::new();
         let mut new_classes = classes.clone();
 
         let mut stable = false;
@@ -64,7 +62,7 @@ impl Kmeans {
             iterations += 1;
 
             // for each class
-            for index in 0..classes::CLASS_NUM {
+            for index in 0..CLASS_NUM {
                 // move the current class according to the kmeans algorithm.
                 new_classes[index] = Self::kmeans_mod(&histo, &classes, index);
             }
@@ -188,7 +186,7 @@ impl Kmeans {
             } else {
                 0
             },
-        ];
+                ];
 
         return components;
     }

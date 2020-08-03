@@ -1,7 +1,7 @@
 use std::ops::{Index, IndexMut};
 
 /// Class amount.
-pub const CLASS_NUM: usize = 6;
+pub const CLASS_NUM: usize = 5;
 /// Class base value.
 pub const CLASS_BASE: u8 = (255 / CLASS_NUM) as u8;
 /// Maximum difference between 2 classes to consider them similar (see [`is_stable`]).

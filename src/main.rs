@@ -6,7 +6,7 @@ use std::vec::Vec;
 use std::{env, fs, io};
 
 mod kmeans;
-use kmeans::*;
+use kmeans::kmeans::*;
 
 /// Main function
 fn main() -> Result<(), String> {
