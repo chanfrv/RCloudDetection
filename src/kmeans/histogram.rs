@@ -8,8 +8,8 @@ pub struct Histogram {
 
 impl Histogram {
     /// Initialize an histogram and fills it with the input image pixels.
-    pub fn new(img: &RgbImage) -> Histogram {
-        let mut histo = Histogram { array: [0; 256] };
+    pub fn new(img: &RgbImage) -> Self {
+        let mut histo = Self { array: [0; 256] };
 
         for y in 0..img.height() {
             for x in 0..img.width() {

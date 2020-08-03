@@ -1,4 +1,4 @@
 pub mod kmeans;
 
-mod histogram;
 mod classes;
+mod histogram;

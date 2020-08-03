@@ -14,8 +14,8 @@ pub struct Classes {
 
 impl Classes {
     /// Initialize the class array with equidistant classes.
-    pub fn new() -> Classes {
-        let mut class = Classes {
+    pub fn new() -> Self {
+        let mut class = Self {
             array: [0; CLASS_NUM],
         };
         for i in 0..CLASS_NUM {
@@ -25,14 +25,14 @@ impl Classes {
     }
 
     /// Clone a classes object.
-    pub fn clone(&self) -> Classes {
-        Classes {
+    pub fn clone(&self) -> Self {
+        Self {
             array: self.array.clone(),
         }
     }
 
     /// Returns true if the classes are close enough.
-    pub fn is_stable(&self, rhs: &Classes) -> bool {
+    pub fn is_stable(&self, rhs: &Self) -> bool {
         for index in 0..CLASS_NUM {
             let diff = i32::abs(self[index] as i32 - rhs[index] as i32);
             if diff as usize >= CLASS_SIMILARITY_THRESHOLD {

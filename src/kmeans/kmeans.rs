@@ -1,5 +1,6 @@
-use super::histogram::*;
 use super::classes::*;
+use super::histogram::*;
+
 use image::{Rgb, RgbImage};
 
 #[allow(dead_code)]
@@ -39,7 +40,7 @@ pub struct Kmeans {
 impl Kmeans {
     /// Initialize the Kmeans structure.
     pub fn new(format_out: KmeansColor) -> Self {
-        Kmeans {
+        Self {
             format_out: format_out,
             cloud_coverage: 0.0,
         }
@@ -164,7 +165,7 @@ impl Kmeans {
     /// ```
     /// If the component is out of bounds, its value is simply 0.
     fn get_components(img: &RgbImage, x: u32, y: u32) -> Vector5 {
-        let components: Vector5 = [
+        [
             if y > 0 {
                 get_pix_mean(img.get_pixel(x, y - 1))
             } else {
@@ -186,9 +187,7 @@ impl Kmeans {
             } else {
                 0
             },
-                ];
-
-        return components;
+        ]
     }
 
     /// Returns the vector5 norm.
