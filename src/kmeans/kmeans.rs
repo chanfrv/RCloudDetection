@@ -1,9 +1,12 @@
+use std::fmt;
+
 use super::classes::*;
 use super::histogram::*;
 
 use image::{Rgb, RgbImage};
 
 #[allow(dead_code)]
+#[derive(Clone)]
 pub enum KmeansColor {
     Grayscale,
     Rgb,
@@ -18,23 +21,22 @@ const ITERATION_LIMIT: u32 = 30;
 /// Colormap
 const COLORMAP_SIZE: usize = 10;
 const COLORMAP: [[u8; 3]; COLORMAP_SIZE] = [
-    [0, 0, 255],
-    [0, 127, 255],
-    [0, 255, 255],
-    [0, 255, 127],
-    [0, 255, 0],
-    [127, 255, 0],
-    [255, 255, 0],
-    [255, 127, 0],
-    [255, 0, 0],
-    [127, 0, 55],
+    [  0,   0, 255],
+    [  0, 127, 255],
+    [  0, 255, 255],
+    [  0, 255, 127],
+    [  0, 255,   0],
+    [127, 255,   0],
+    [255, 255,   0],
+    [255, 127,   0],
+    [255,   0,   0],
+    [127,   0,  55],
 ];
 const COLORMAP_CLOUD_THRESHOLD: usize = 1;
 
 /// Kmeans structure.
 pub struct Kmeans {
     format_out: KmeansColor,
-    cloud_coverage: f32,
 }
 
 impl Kmeans {
@@ -42,16 +44,15 @@ impl Kmeans {
     pub fn new(format_out: KmeansColor) -> Self {
         Self {
             format_out: format_out,
-            cloud_coverage: 0.0,
         }
     }
 
     /// Creates the output image by applying a modified k-means algorithm to the input image.
-    pub fn compute_image(&mut self, img_in: &RgbImage, img_out: &mut RgbImage) -> u32 {
+    pub fn compute_image(&mut self, img_in: &RgbImage, img_out: &mut RgbImage, classes_num: usize) -> (u32, f32) {
         // init the histogram
         let histo = Histogram::new(&img_in);
         // init the classes
-        let mut classes = Classes::new();
+        let mut classes = Classes::new(classes_num);
         let mut new_classes = classes.clone();
 
         let mut stable = false;
@@ -63,7 +64,7 @@ impl Kmeans {
             iterations += 1;
 
             // for each class
-            for index in 0..CLASS_NUM {
+            for index in 0..classes.len() {
                 // move the current class according to the kmeans algorithm.
                 new_classes[index] = Self::kmeans_mod(&histo, &classes, index);
             }
@@ -88,8 +89,8 @@ impl Kmeans {
 
                 // get the frontier cloud/everything else
                 // [ c0 c1 ... cN-2 <frontier> cN-1 ] => frontier = cN-1 - (cN-1 - cN-2) / 2
-                let clouds_min_index: usize = (classes[CLASS_NUM - 1]
-                    - (classes[CLASS_NUM - 1] - classes[CLASS_NUM - 2]) / 2)
+                let clouds_min_index: usize = (classes[classes.len() - 1]
+                    - (classes[classes.len() - 1] - classes[classes.len() - 2]) / 2)
                     as usize;
 
                 // divide the hisogram in 2 chunks and sum them
@@ -114,16 +115,7 @@ impl Kmeans {
             }
         };
 
-        self.cloud_coverage = clouds * 100.0 / (clouds + other);
-
-        return iterations;
-    }
-
-    /// Cloud coverage getter.
-    ///
-    /// The cloud coverage is computed in the [`compute_image`] method.
-    pub fn get_cloud_coverage(&self) -> f32 {
-        self.cloud_coverage
+        return (iterations, clouds * 100.0 / (clouds + other));
     }
 
     /// Computes the kmeans algorithm for the given index in the class array.
@@ -137,7 +129,7 @@ impl Kmeans {
         } else {
             u8::MIN
         };
-        let index_max = if index < CLASS_NUM - 1 {
+        let index_max = if index < classes.len() - 1 {
             classes.center(index, index + 1) + 1
         } else {
             u8::MAX
@@ -215,7 +207,7 @@ impl Kmeans {
         let mut base_index = 0;
         let mut base_diff = f32::MAX;
 
-        for curr_index in 0..CLASS_NUM {
+        for curr_index in 0..classes.len() {
             let curr_norm = f32::sqrt(5.0 * f32::powf(classes[curr_index] as f32, 2.0));
             let curr_diff = f32::abs(curr_norm - norm);
 
@@ -228,12 +220,21 @@ impl Kmeans {
         let (pixel, index) = match self.format_out {
             KmeansColor::Grayscale => (Rgb([classes[base_index]; 3]), base_index),
             KmeansColor::Rgb => {
-                let colormap_index: usize = base_index * COLORMAP_SIZE / CLASS_NUM;
+                let colormap_index: usize = base_index * COLORMAP_SIZE / classes.len();
                 (Rgb(COLORMAP[colormap_index]), colormap_index)
             }
         };
 
         img_out.put_pixel(x, y, pixel);
         return index;
+    }
+}
+
+impl fmt::Display for KmeansColor {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            KmeansColor::Rgb => write!(f, "Rgb"),
+            KmeansColor::Grayscale => write!(f, "Grayscale")
+        }
     }
 }
