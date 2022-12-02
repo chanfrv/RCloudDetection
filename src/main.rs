@@ -1,4 +1,4 @@
-use show_image::*;
+use show_image::{ImageView, ImageInfo, WindowOptions, event, create_window};
 use std::path::{Path, PathBuf};
 use std::string::String;
 use std::time::*;
@@ -43,13 +43,14 @@ fn parse_args(args: Vec<String>) -> (String, usize, KmeansColor) {
 }
 
 /// Main function
-fn main() -> Result<(), String> {
+#[show_image::main]
+fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args: Vec<String> = env::args().collect();
 
     let (path_str, classes, colors) = parse_args(args);
 
     let path = Path::new(&path_str);
-    
+
     let mut entries = match fs::read_dir(path) {
         Ok(m) => match m
             .map(|res| res.map(|e| e.path()))
@@ -66,24 +67,22 @@ fn main() -> Result<(), String> {
 
     entries.sort();
 
-    let window_opt = WindowOptions {
-        name: "Image".to_string(),
-        size: [800, 900],
-        resizable: true,
-        preserve_aspect_ratio: true,
-    };
-    let show_window = make_window_full(window_opt)?;
+    let window_opt = WindowOptions::new()
+        .set_size([1000, 1600])
+        .set_resizable(true)
+        .set_preserve_aspect_ratio(true);
+    let show_window = create_window("image", window_opt)?;
 
     // for each file
     for entry in entries {
         // ignoring dirs
         if entry.is_dir() == false {
             // get the image object
-            let img_ori = image::open(&entry).unwrap().into_rgb();
+            let img_ori = image::open(&entry).unwrap().into_rgb8();
             let mut img_res = img_ori.clone();
 
             let imageinfo =
-                ImageInfo::rgb8(img_ori.width() as usize, img_ori.height() as usize * 2);
+                ImageInfo::rgb8(img_ori.width(), img_ori.height()* 2);
 
             // start chrono
             let start = Instant::now();
@@ -106,18 +105,18 @@ fn main() -> Result<(), String> {
 
             // show image
             let (slice_ori, slice_res) = (&img_ori.into_raw(), &img_res.into_raw());
-            let show_img: (Vec<u8>, &ImageInfo) = (
-                slice_ori.iter().chain(slice_res).cloned().collect(),
-                &imageinfo,
+            let chain = slice_ori.iter().chain(slice_res).cloned().collect::<Vec<_>>();
+            let show_img = ImageView::new(
+                imageinfo,
+                &chain,
             );
-            show_window.set_image(&show_img, "image")?;
+            show_window.set_image(entry.display().to_string(), show_img)?;
 
-            while let Ok(event) = show_window.wait_key(Duration::new(60, 0)) {
-                if let Some(event) = event {
-                    if event.key == KeyCode::Escape {
-                        return Ok(());
+            for event in show_window.event_channel()? {
+                if let event::WindowEvent::KeyboardInput(event) = event {
+                    if event.input.key_code == Some(event::VirtualKeyCode::Return) && event.input.state.is_pressed() {
+                        break;
                     }
-                    break;
                 }
             }
         }

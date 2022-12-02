@@ -3,9 +3,10 @@ name = "nuage_detection"
 version = "0.1.0"
 authors = ["Victor Chanfrault <victor.chanfrault@outlook.fr>"]
 edition = "2018"
+resolver = "2"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-image = ""
-show-image = ""
+image = "0.24.5"
+show-image = "0.13.1"
